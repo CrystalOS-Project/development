@@ -156,6 +156,7 @@ class Resources(object):
                 'You must either set up your build environment, or specify a '
                 'device to run against. See --help for more info.')
 
+<<<<<<< HEAD
         self.system_privapp_apks, self.product_privapp_apks, self.system_ext_privapp_apks =(
                 self._resolve_apks(apks))
         self.system_permissions_dir = (
@@ -174,6 +175,11 @@ class Resources(object):
         self.system_ext_sysconfig_dir = (
                 self._resolve_sys_path('system_ext/etc/sysconfig',
                                        'system/system_ext/etc/sysconfig'))
+=======
+        self.privapp_apks = self._resolve_apks(apks)
+        self.permissions_dir = self._resolve_sys_path('system/etc/permissions')
+        self.sysconfig_dir = self._resolve_sys_path('system/etc/sysconfig')
+>>>>>>> 606e848a3621a5caa1efdc5db50c97887fad80d8
         self.framework_res_apk = self._resolve_sys_path('system/framework/'
                                                         'framework-res.apk')
 
@@ -304,9 +310,13 @@ class Resources(object):
             be found.
         """
         if not apks:
+<<<<<<< HEAD
             return (self._resolve_all_system_privapps(),
                    self._resolve_all_product_privapps(),
                    self._resolve_all_system_ext_privapps())
+=======
+            return self._resolve_all_privapps()
+>>>>>>> 606e848a3621a5caa1efdc5db50c97887fad80d8
 
         ret_apks = []
         for apk in apks:
@@ -323,6 +333,7 @@ class Resources(object):
                 raise MissingResourceError('File "%s" does not exist.' % apk)
             else:
                 ret_apks.append(apk)
+<<<<<<< HEAD
         return ret_apks, None
 
     def _resolve_all_system_privapps(self):
@@ -334,11 +345,24 @@ class Resources(object):
         else:
             try:
                 system_priv_app_dir = self.adb.pull('/system/priv-app/')
+=======
+        return ret_apks
+
+    def _resolve_all_privapps(self):
+        """Extract package name and requested permissions."""
+        if self._is_android_env:
+            priv_app_dir = os.path.join(os.environ['ANDROID_PRODUCT_OUT'],
+                                        'system/priv-app')
+        else:
+            try:
+                priv_app_dir = self.adb.pull('/system/priv-app/')
+>>>>>>> 606e848a3621a5caa1efdc5db50c97887fad80d8
             except subprocess.CalledProcessError:
                 raise MissingResourceError(
                     'Directory "/system/priv-app" could not be pulled from on '
                     'device "%s".' % self.adb.serial)
 
+<<<<<<< HEAD
         return get_output('find %s -name "*.apk"' % system_priv_app_dir).split()
 
     def _resolve_all_product_privapps(self):
@@ -423,6 +447,16 @@ class Resources(object):
                         'device "%s".' % (fallback_file_path, self.adb.serial))
 
         return sys_path
+=======
+        return get_output('find %s -name "*.apk"' % priv_app_dir).split()
+
+    def _resolve_sys_path(self, file_path):
+        """Resolves a path that is a part of an Android System Image."""
+        if self._is_android_env:
+            return os.path.join(os.environ['ANDROID_PRODUCT_OUT'], file_path)
+        else:
+            return self.adb.pull(file_path)
+>>>>>>> 606e848a3621a5caa1efdc5db50c97887fad80d8
 
 
 def get_output(command):
@@ -484,6 +518,7 @@ def parse_args():
         help='A list of paths to priv-app APKs to generate permissions for. '
              'To make a path device-side, prefix the path with "device:".'
     )
+<<<<<<< HEAD
     parser.add_argument(
         '-w',
         '--writetodisk',
@@ -511,10 +546,13 @@ def parse_args():
         required=False,
         help='Path to system permissions file. Default value is ./systemext.xml'
     )
+=======
+>>>>>>> 606e848a3621a5caa1efdc5db50c97887fad80d8
     cmd_args = parser.parse_args()
 
     return cmd_args
 
+<<<<<<< HEAD
 def create_permission_file(resources, privapp_apks, permissions_dir,
             sysconfig_dir, file=None):
     # Parse base XML files in /etc dir, permissions listed there don't have
@@ -522,6 +560,15 @@ def create_permission_file(resources, privapp_apks, permissions_dir,
     base_permissions = {}
     base_xml_files = itertools.chain(list_xml_files(permissions_dir),
                                      list_xml_files(sysconfig_dir))
+=======
+
+def create_permission_file(resources):
+    # Parse base XML files in /etc dir, permissions listed there don't have
+    # to be re-added
+    base_permissions = {}
+    base_xml_files = itertools.chain(list_xml_files(resources.permissions_dir),
+                                     list_xml_files(resources.sysconfig_dir))
+>>>>>>> 606e848a3621a5caa1efdc5db50c97887fad80d8
     for xml_file in base_xml_files:
         parse_config_xml(xml_file, base_permissions)
 
@@ -530,7 +577,11 @@ def create_permission_file(resources, privapp_apks, permissions_dir,
 
     apps_redefine_base = []
     results = {}
+<<<<<<< HEAD
     for priv_app in privapp_apks:
+=======
+    for priv_app in resources.privapp_apks:
+>>>>>>> 606e848a3621a5caa1efdc5db50c97887fad80d8
         pkg_info = extract_pkg_and_requested_permissions(resources.aapt,
                                                          priv_app)
         pkg_name = pkg_info['package_name']
@@ -547,8 +598,12 @@ def create_permission_file(resources, privapp_apks, permissions_dir,
             results[pkg_name] = sorted(priv_perms)
 
     print_xml(results, apps_redefine_base)
+<<<<<<< HEAD
     if file is not None:
         print_xml(results, apps_redefine_base, file)
+=======
+
+>>>>>>> 606e848a3621a5caa1efdc5db50c97887fad80d8
 
 def print_xml(results, apps_redefine_base, fd=sys.stdout):
     """Print results to the given file."""
@@ -694,6 +749,7 @@ if __name__ == '__main__':
             serial=args.serial,
             apks=args.apks
         )
+<<<<<<< HEAD
         system_permission_file=None
         product_permission_file=None
         system_ext_permission_file=None
@@ -750,6 +806,9 @@ if __name__ == '__main__':
                 system_ext_permission_file)
             if args.writetodisk:
                 system_ext_permission_file.close()
+=======
+        create_permission_file(tool_resources)
+>>>>>>> 606e848a3621a5caa1efdc5db50c97887fad80d8
     except MissingResourceError as e:
         print(str(e), file=sys.stderr)
         exit(1)
